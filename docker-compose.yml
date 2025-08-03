@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    ports:
+      - "8096:8096"
+    volumes:
+      - ./config:/config
+      - ./cache:/cache
+      - ./peliculas:/media/videos
+    restart: unless-stopped
+
+  landing:
+    image: nginx:alpine
+    container_name: cinebus-landing
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    restart: unless-stopped

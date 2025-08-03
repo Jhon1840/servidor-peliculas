@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ServerConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LogFileRetentionDays>3</LogFileRetentionDays>
+  <IsStartupWizardCompleted>true</IsStartupWizardCompleted>
+  <EnableMetrics>false</EnableMetrics>
+  <EnableNormalizedItemByNameIds>true</EnableNormalizedItemByNameIds>
+  <IsPortAuthorized>true</IsPortAuthorized>
+  <QuickConnectAvailable>false</QuickConnectAvailable>
+  <EnableCaseSensitiveItemIds>true</EnableCaseSensitiveItemIds>
+  <DisableLiveTvChannelUserDataName>true</DisableLiveTvChannelUserDataName>
+  <MetadataPath />
+  <PreferredMetadataLanguage>es-mx</PreferredMetadataLanguage>
+  <MetadataCountryCode>BO</MetadataCountryCode>
+  <SortReplaceCharacters>
+    <string>.</string>
+    <string>+</string>
+    <string>%</string>
+  </SortReplaceCharacters>
+  <SortRemoveCharacters>
+    <string>,</string>
+    <string>&amp;</string>
+    <string>-</string>
+    <string>{</string>
+    <string>}</string>
+    <string>'</string>
+  </SortRemoveCharacters>
+  <SortRemoveWords>
+    <string>the</string>
+    <string>a</string>
+    <string>an</string>
+  </SortRemoveWords>
+  <MinResumePct>5</MinResumePct>
+  <MaxResumePct>90</MaxResumePct>
+  <MinResumeDurationSeconds>300</MinResumeDurationSeconds>
+  <MinAudiobookResume>5</MinAudiobookResume>
+  <MaxAudiobookResume>5</MaxAudiobookResume>
+  <InactiveSessionThreshold>0</InactiveSessionThreshold>
+  <LibraryMonitorDelay>60</LibraryMonitorDelay>
+  <LibraryUpdateDuration>30</LibraryUpdateDuration>
+  <ImageSavingConvention>Legacy</ImageSavingConvention>
+  <SkipDeserializationForBasicTypes>true</SkipDeserializationForBasicTypes>
+  <ServerName>CineBus</ServerName>
+  <UICulture>es</UICulture>
+  <SaveMetadataHidden>false</SaveMetadataHidden>
+  <ContentTypes />
+  <RemoteClientBitrateLimit>0</RemoteClientBitrateLimit>
+  <EnableFolderView>false</EnableFolderView>
+  <EnableGroupingIntoCollections>false</EnableGroupingIntoCollections>
+  <DisplaySpecialsWithinSeasons>true</DisplaySpecialsWithinSeasons>
+  <CodecsUsed />
+  <EnableExternalContentInSuggestions>true</EnableExternalContentInSuggestions>
+  <ImageExtractionTimeoutMs>0</ImageExtractionTimeoutMs>
+  <PathSubstitutions />
+  <EnableSlowResponseWarning>true</EnableSlowResponseWarning>
+  <SlowResponseThresholdMs>500</SlowResponseThresholdMs>
+  <CorsHosts>
+    <string>*</string>
+  </CorsHosts>
+  <ActivityLogRetentionDays>30</ActivityLogRetentionDays>
+  <LibraryScanFanoutConcurrency>0</LibraryScanFanoutConcurrency>
+  <LibraryMetadataRefreshConcurrency>0</LibraryMetadataRefreshConcurrency>
+  <RemoveOldPlugins>true</RemoveOldPlugins>
+  <AllowClientLogUpload>false</AllowClientLogUpload>
+  <DummyChapterDuration>0</DummyChapterDuration>
+  <ChapterImageResolution>MatchSource</ChapterImageResolution>
+  <ParallelImageEncodingLimit>0</ParallelImageEncodingLimit>
+</ServerConfiguration> 

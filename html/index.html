@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineBus</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #FFD700;
+    }
+    p {
+      max-width: 80%;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    a {
+      background-color: #FFD700;
+      color: #000;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      text-decoration: none;
+      border-radius: 10px;
+    }
+    a:hover {
+      background-color: #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎬 Bienvenido a CineBus</h1>
+  <p>Conéctate al Wi-Fi <strong>CineBus</strong> y haz clic abajo para ver las películas disponibles.</p>
+  <a id="jellyfin-link" href="#">📺 Ver Películas</a>
+  <script>
+    // Redirección automática a la IP/hostname detectado en el puerto 8096
+    window.onload = function() {
+      var host = window.location.hostname;
+      var url = 'http://' + host + ':8096';
+      window.location.href = url;
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+# Scripts de prueba y configuración
+script/
+
+# Logs
+*.log
+logs/
+
+# Configuración de DNS dinámico
+ddns_config.json
+jellyfin_api_info.json
+
+# Cache de Jellyfin
+cache/
+
+# Configuración local de Jellyfin - IGNORAR TODO
+config/
+
+# Archivos de películas - IGNORAR TODO (muy pesado)
+peliculas/
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Archivos de Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de Docker
+.dockerignore
+
+# Archivos de configuración local
+.env
+.env.local
+.env.production
+
+# Archivos de backup
+*.bak
+*.backup
+
+# Archivos de metadatos y subtítulos
+*.ass
+*.srt
+*.sub
+*.idx
+
+# Archivos de video (por si acaso)
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.m4v
+*.3gp
+*.ogv
+
+# Archivos de audio
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+*.wma
+*.m4a
+
+# Archivos de imagen
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp 
