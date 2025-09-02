@@ -4,15 +4,21 @@ import {
   FlatList,
   StyleSheet,
   Text,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import MovieCard from '../components/MovieCard';
 import SearchBar from '../components/SearchBar';
-import { Movie, jellyfinService } from '../services/jellyfinApi';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorMessage from '../components/ui/ErrorMessage';
+import EmptyState from '../components/ui/EmptyState';
+import { Movie } from '../services/models/Movie';
+import { movieService } from '../services/MovieService';
+import { cacheService, CacheService } from '../services/CacheService';
 import { CONFIG } from '../config/constants';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
@@ -27,6 +33,8 @@ const MoviesScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     loadMovies();
@@ -35,27 +43,35 @@ const MoviesScreen: React.FC = () => {
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredMovies(movies);
-    } else {
-      const filtered = movies.filter(movie =>
-        movie.Name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredMovies(filtered);
     }
   }, [searchQuery, movies]);
 
-  const loadMovies = async () => {
+  const loadMovies = async (useCache: boolean = true) => {
     try {
       setLoading(true);
-      const response = await jellyfinService.getMovies();
-      setMovies(response.Items || []);
-      setFilteredMovies(response.Items || []);
+      setError(null);
+
+      // Try to get from cache first
+      if (useCache) {
+        const cachedMovies = cacheService.get<Movie[]>(CacheService.KEYS.MOVIES);
+        if (cachedMovies) {
+          setMovies(cachedMovies);
+          setFilteredMovies(cachedMovies);
+          setLoading(false);
+        }
+      }
+
+      const response = await movieService.getMovies();
+      const moviesList = response.Items || [];
+      
+      setMovies(moviesList);
+      setFilteredMovies(moviesList);
+      
+      // Cache the results
+      cacheService.set(CacheService.KEYS.MOVIES, moviesList);
     } catch (error) {
       console.error('Error loading movies:', error);
-      Alert.alert(
-        'Error',
-        'No se pudieron cargar las películas. Verifica que el servidor Jellyfin esté funcionando.',
-        [{ text: 'OK' }]
-      );
+      setError('No se pudieron cargar las películas. Verifica que el servidor esté funcionando.');
     } finally {
       setLoading(false);
     }
@@ -66,12 +82,28 @@ const MoviesScreen: React.FC = () => {
     
     if (query.trim() === '') {
       setFilteredMovies(movies);
+      setIsSearching(false);
       return;
     }
 
+    setIsSearching(true);
+
     try {
-      const response = await jellyfinService.searchMovies(query);
-      setFilteredMovies(response.Items || []);
+      // Try cache first
+      const cacheKey = CacheService.KEYS.SEARCH(query);
+      const cachedResults = cacheService.get<Movie[]>(cacheKey);
+      
+      if (cachedResults) {
+        setFilteredMovies(cachedResults);
+        setIsSearching(false);
+        return;
+      }
+
+      const response = await movieService.searchMovies(query);
+      const searchResults = response.Items || [];
+      
+      setFilteredMovies(searchResults);
+      cacheService.set(cacheKey, searchResults);
     } catch (error) {
       console.error('Error searching movies:', error);
       // Fallback to local filtering
@@ -79,55 +111,93 @@ const MoviesScreen: React.FC = () => {
         movie.Name.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredMovies(filtered);
+    } finally {
+      setIsSearching(false);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadMovies();
+    await loadMovies(false); // Don't use cache on refresh
     setRefreshing(false);
   };
 
   const handleMoviePress = (movie: Movie) => {
-    const url = jellyfinService.getPlaybackUrl(movie.Id);
-    navigation.navigate('VideoPlayer', { url, title: movie.Name });
+    navigation.navigate('MovieDetails', { movieId: movie.Id });
   };
 
   const renderMovie = ({ item }: { item: Movie }) => (
     <MovieCard movie={item} onPress={handleMoviePress} />
   );
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>
-        {searchQuery ? 'No se encontraron películas' : 'No hay películas disponibles'}
+  const renderEmptyState = () => {
+    if (searchQuery) {
+      return (
+        <EmptyState
+          icon="search-outline"
+          title="No se encontraron películas"
+          subtitle="Intenta con otro término de búsqueda"
+        />
+      );
+    }
+    
+    return (
+      <EmptyState
+        icon="film-outline"
+        title="No hay películas disponibles"
+        subtitle="Verifica que el servidor esté funcionando"
+      />
+    );
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerTop}>
+        <Text style={styles.title}>Mis Películas</Text>
+        <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+          <Ionicons name="refresh" size={24} color={CONFIG.UI.COLORS.TEXT_PRIMARY} />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.subtitle}>
+        {filteredMovies.length} película{filteredMovies.length !== 1 ? 's' : ''}
+        {searchQuery && ` para "${searchQuery}"`}
       </Text>
-      {searchQuery && (
-        <Text style={styles.emptySubtext}>
-          Intenta con otro término de búsqueda
-        </Text>
-      )}
     </View>
   );
 
-  if (loading) {
+  if (loading && movies.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={CONFIG.UI.COLORS.PRIMARY} />
-          <Text style={styles.loadingText}>Cargando películas...</Text>
-        </View>
+        <LoadingSpinner text="Cargando películas..." />
+      </SafeAreaView>
+    );
+  }
+
+  if (error && movies.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ErrorMessage
+          message={error}
+          onRetry={() => loadMovies(false)}
+        />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Mis Películas</Text>
-        
-      </View>
+      {renderHeader()}
       
+      <SearchBar 
+        onSearch={handleSearch}
+        placeholder="Buscar películas..."
+      />
+      
+      {isSearching && (
+        <View style={styles.searchingContainer}>
+          <LoadingSpinner size="small" text="Buscando..." />
+        </View>
+      )}
       
       <FlatList
         data={filteredMovies}
@@ -146,6 +216,7 @@ const MoviesScreen: React.FC = () => {
           />
         }
         ListEmptyComponent={renderEmptyState}
+        ListHeaderComponent={isSearching ? null : undefined}
       />
     </SafeAreaView>
   );
@@ -157,52 +228,38 @@ const styles = StyleSheet.create({
     backgroundColor: CONFIG.UI.COLORS.BACKGROUND,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: CONFIG.UI.SPACING.MD,
+    paddingVertical: CONFIG.UI.SPACING.SM,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: CONFIG.UI.SPACING.XS,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: CONFIG.UI.COLORS.TEXT_PRIMARY,
-    marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
     color: CONFIG.UI.COLORS.TEXT_SECONDARY,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  refreshButton: {
+    padding: CONFIG.UI.SPACING.SM,
+    borderRadius: 20,
+    backgroundColor: CONFIG.UI.COLORS.SECONDARY,
   },
-  loadingText: {
-    color: CONFIG.UI.COLORS.TEXT_PRIMARY,
-    fontSize: 16,
-    marginTop: 16,
+  searchingContainer: {
+    paddingVertical: CONFIG.UI.SPACING.SM,
   },
   listContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingHorizontal: CONFIG.UI.SPACING.MD,
+    paddingBottom: CONFIG.UI.SPACING.LG,
   },
   row: {
     justifyContent: 'space-between',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    color: CONFIG.UI.COLORS.TEXT_PRIMARY,
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    color: CONFIG.UI.COLORS.TEXT_SECONDARY,
-    fontSize: 14,
-    textAlign: 'center',
   },
 });
 
