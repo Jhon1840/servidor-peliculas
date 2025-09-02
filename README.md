@@ -32,7 +32,7 @@ docker-compose up -d
 ### Acceso Restringido
 El servidor está configurado para acceso solo por API key:
 
-- **API Key**: `87c8ee2407a44adbbbceade9022d093b`
+- **API Key**: `obtenible en la aplicacion`
 - **URL**: `http://localhost:8096` (local) o `http://tu-dominio.ddns.net:8096` (remoto)
 - **Acceso web**: Deshabilitado
 - **Solo API**: Habilitado
